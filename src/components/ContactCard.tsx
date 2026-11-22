@@ -1,68 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowUpRight, Check, Copy, Download, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Check, Copy, Download, Mail, Phone } from "lucide-react";
 import { SiInstagram, SiWhatsapp } from "react-icons/si";
 import { contactInfo as c, VCARD_PATH } from "@/lib/contact";
 
 type Row = {
   id: string;
   label: string;
+  hint: string;
   value: string;
   href: string;
-  action: string;
   copy: string;
   icon: React.ReactNode;
-  accent: string;
   external?: boolean;
 };
 
 const rows: Row[] = [
-  {
-    id: "phone",
-    label: "Phone",
-    value: c.phone.display,
-    href: `tel:${c.phone.e164}`,
-    action: "Call",
-    copy: c.phone.e164,
-    icon: <Phone className="w-5 h-5" />,
-    accent: "from-blue-500/30 to-blue-500/5 text-blue-300",
-  },
-  {
-    id: "whatsapp",
-    label: "WhatsApp",
-    value: c.whatsapp.display,
-    href: `https://wa.me/${c.whatsapp.e164.replace("+", "")}`,
-    action: "Chat",
-    copy: c.whatsapp.e164,
-    icon: <SiWhatsapp className="w-5 h-5" />,
-    accent: "from-emerald-500/30 to-emerald-500/5 text-emerald-300",
-    external: true,
-  },
-  {
-    id: "email",
-    label: "Email",
-    value: c.email,
-    href: `mailto:${c.email}`,
-    action: "Write",
-    copy: c.email,
-    icon: <Mail className="w-5 h-5" />,
-    accent: "from-purple-500/30 to-purple-500/5 text-purple-300",
-  },
-  {
-    id: "instagram",
-    label: "Instagram",
-    value: c.instagram.handle,
-    href: c.instagram.url,
-    action: "Follow",
-    copy: c.instagram.handle,
-    icon: <SiInstagram className="w-5 h-5" />,
-    accent: "from-pink-500/30 to-pink-500/5 text-pink-300",
-    external: true,
-  },
+  { id: "phone", label: "Phone", hint: "Call", value: c.phone.display, href: `tel:${c.phone.e164}`, copy: c.phone.e164, icon: <Phone className="size-5" /> },
+  { id: "whatsapp", label: "WhatsApp", hint: "Message", value: c.whatsapp.display, href: `https://wa.me/${c.whatsapp.e164.replace("+", "")}`, copy: c.whatsapp.e164, icon: <SiWhatsapp className="size-5" />, external: true },
+  { id: "email", label: "Email", hint: "Write", value: c.email, href: `mailto:${c.email}`, copy: c.email, icon: <Mail className="size-5" /> },
+  { id: "instagram", label: "Instagram", hint: "Open", value: c.instagram.handle, href: c.instagram.url, copy: c.instagram.handle, icon: <SiInstagram className="size-5" />, external: true },
 ];
+
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-khaki)]";
+
+const delay = (s: number) => ({ "--d": `${s}s` }) as React.CSSProperties;
 
 const CopyButton = ({ text, label }: { text: string; label: string }) => {
   const [copied, setCopied] = useState(false);
@@ -73,7 +39,7 @@ const CopyButton = ({ text, label }: { text: string; label: string }) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      // Clipboard can be unavailable (insecure context); fail silently.
+      // Clipboard is unavailable on insecure origins; nothing to do.
     }
   };
 
@@ -82,113 +48,117 @@ const CopyButton = ({ text, label }: { text: string; label: string }) => {
       type="button"
       onClick={handleCopy}
       aria-label={copied ? `${label} copied` : `Copy ${label}`}
-      className="w-10 h-10 shrink-0 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/30 transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      className={`grid size-12 shrink-0 place-items-center rounded-full text-[var(--c-muted)] transition-colors active:bg-white/15 hover:text-[var(--c-bone)] ${focusRing}`}
     >
-      {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+      {copied ? <Check className="size-[18px] text-[var(--c-sage)]" /> : <Copy className="size-[18px]" />}
+      <span aria-live="polite" className="sr-only">{copied ? `${label} copied` : ""}</span>
     </button>
   );
 };
 
 const ContactCard = () => {
   return (
-    <main className="relative min-h-screen w-full bg-[#121212] text-white overflow-hidden px-6 py-10 md:py-16">
-      {/* Ambient glows, same palette as the home page Contact section */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-blue-900/15 blur-[120px]" />
-        <div className="absolute bottom-0 -left-[10%] w-[50%] h-[50%] rounded-full bg-purple-900/15 blur-[120px]" />
-      </div>
+    <main
+      className="contact-theme relative min-h-dvh w-full overflow-x-clip bg-[var(--c-ink)] text-[var(--c-bone)]"
+      style={{
+        paddingTop: "max(1rem, env(safe-area-inset-top))",
+        paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+        paddingLeft: "max(1rem, env(safe-area-inset-left))",
+        paddingRight: "max(1rem, env(safe-area-inset-right))",
+      }}
+    >
+      {/* Late-afternoon light, taken from the photo */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_40%_at_20%_0%,rgb(194_164_114/0.16),transparent_70%),radial-gradient(60%_35%_at_100%_100%,rgb(143_165_130/0.10),transparent_70%)]"
+      />
 
-      <div className="relative z-10 max-w-5xl mx-auto">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white rounded"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to portfolio
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-          {/* Profile card */}
-          <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-8 md:p-10 text-center lg:sticky lg:top-10"
+      {/* Phone-width column; side by side only on landscape phones */}
+      <div className="relative mx-auto w-full max-w-[26rem] ls:grid ls:max-w-4xl ls:grid-cols-[auto_minmax(0,1fr)] ls:items-start ls:gap-x-10">
+        {/* Portrait */}
+        <div className="ls:sticky ls:top-0 ls:self-start">
+          <Link
+            href="/"
+            className={`mb-4 inline-flex min-h-11 items-center gap-2 rounded pr-3 text-sm text-[var(--c-muted)] transition-colors hover:text-[var(--c-bone)] ${focusRing}`}
           >
-            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.1),transparent_55%)]" />
+            <ArrowLeft className="size-4" /> Portfolio
+          </Link>
 
-            <div className="relative mx-auto mb-6 w-28 h-28 rounded-full p-[2px] bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500">
-              <div className="w-full h-full rounded-full bg-[#121212] flex items-center justify-center text-3xl font-bold tracking-tight">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">AY</span>
-              </div>
+          {/* Width is capped by viewport height too, so the name and Save button stay near the top on short phones */}
+          <div className="relative mx-auto w-[min(100%,calc(38dvh*0.8),18rem)] ls:mx-0 ls:w-[calc((100dvh-6rem)*0.8)] ls:max-w-[16rem]">
+            <div
+              aria-hidden
+              className="absolute inset-0 translate-x-2 translate-y-2 rounded-t-[999px] rounded-b-[1.5rem] border border-[var(--c-khaki)]/50"
+            />
+            <div className="reveal relative aspect-[4/5] w-full overflow-hidden rounded-t-[999px] rounded-b-[1.5rem] bg-[var(--c-moss)]">
+              <Image
+                src="/profile.webp"
+                alt="Animesh Ansh Yadav smiling, wearing sunglasses and a khaki shirt, with trees and a pond behind him"
+                fill
+                priority
+                sizes="(max-width: 540px) 70vw, 288px"
+                className="object-cover object-[50%_30%]"
+              />
             </div>
+          </div>
+        </div>
 
-            <h1 className="relative text-3xl md:text-4xl font-bold tracking-tight">{c.name}</h1>
-            <p className="relative mt-2 text-neutral-400 font-light tracking-wide">{c.title}</p>
+        {/* Details */}
+        <div className="mt-8 ls:mt-0 ls:pt-2">
+          <h1
+            style={delay(0.5)}
+            className="rise text-center font-[family-name:var(--font-display)] text-[clamp(2.25rem,11vw,3.25rem)] font-medium leading-[0.98] tracking-[-0.02em] ls:text-left ls:text-[clamp(1.75rem,9vh,2.75rem)]"
+          >
+            Animesh Ansh
+            <br />
+            Yadav
+          </h1>
+          <p
+            style={delay(0.6)}
+            className="rise mx-auto mt-3 max-w-xs text-center text-base text-[var(--c-muted)] ls:mx-0 ls:mt-2 ls:text-left"
+          >
+            Web and app developer
+          </p>
 
-            <div className="relative mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Open to opportunities
-            </div>
+          <a
+            style={delay(0.7)}
+            href={VCARD_PATH}
+            download="Animesh-Ansh-Yadav.vcf"
+            className={`rise group mt-6 flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[var(--c-khaki)] px-6 text-base font-semibold text-[var(--c-ink)] transition-[transform,background-color] duration-200 active:scale-[0.98] active:bg-[var(--c-bone)] hover:bg-[var(--c-bone)] ls:mt-4 ls:min-h-12 ${focusRing}`}
+          >
+            <Download className="size-5" />
+            Save to contacts
+          </a>
+          <p className="mt-2 text-center text-sm text-[var(--c-muted)] ls:text-left">
+            Includes my photo. Works on iPhone and Android.
+          </p>
 
-            <a
-              href={VCARD_PATH}
-              download="Animesh-Ansh-Yadav.vcf"
-              className="relative mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-black transition-transform duration-300 hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              <Download className="w-5 h-5" /> Save to Contacts
-            </a>
-            <p className="relative mt-3 text-xs text-neutral-500">
-              Works on iPhone and Android &middot; .vcf contact card
-            </p>
-          </motion.section>
-
-          {/* Details */}
-          <section className="lg:col-span-3" aria-label="Contact details">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-6"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Let&apos;s <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">connect</span>
-              </h2>
-              <p className="mt-2 text-neutral-400">Pick whichever channel suits you — I&apos;ll get back quickly.</p>
-            </motion.div>
-
-            <ul className="flex flex-col gap-4">
-              {rows.map((row, i) => (
-                <motion.li
-                  key={row.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 + i * 0.1 }}
-                  className="group relative flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 md:p-5 hover:bg-white/10 hover:border-white/20 transition-colors duration-500"
+          <ul className="mt-7 border-t border-[var(--c-line)] ls:mt-5">
+            {rows.map((row, i) => (
+              <li
+                key={row.id}
+                style={delay(0.8 + i * 0.07)}
+                className="rise flex items-center border-b border-[var(--c-line)]"
+              >
+                <a
+                  href={row.href}
+                  {...(row.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className={`flex min-h-[4.5rem] min-w-0 flex-1 items-center gap-2.5 min-[360px]:gap-4 rounded-xl py-3 pr-2 transition-colors active:bg-white/10 hover:bg-white/[0.03] ls:min-h-16 ls:py-2 ${focusRing}`}
                 >
-                  <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${row.accent} border border-white/10 flex items-center justify-center`}>
+                  <span className="grid size-11 shrink-0 place-items-center rounded-full border border-[var(--c-line)] text-[var(--c-khaki)]">
                     {row.icon}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">{row.label}</p>
-                    <p className="truncate text-base md:text-lg font-medium text-neutral-100">{row.value}</p>
-                  </div>
-
-                  <CopyButton text={row.copy} label={row.label} />
-
-                  <a
-                    href={row.href}
-                    {...(row.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    aria-label={`${row.action} via ${row.label}`}
-                    className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-4 text-sm font-medium transition-all duration-300 hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
-                    <span className="hidden sm:inline">{row.action}</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </a>
-                </motion.li>
-              ))}
-            </ul>
-          </section>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm text-[var(--c-muted)]">
+                      {row.label} <span aria-hidden>·</span> {row.hint}
+                    </span>
+                    <span className="block [overflow-wrap:anywhere] text-[clamp(0.8rem,4vw,1.0625rem)] font-medium leading-snug">{row.value}</span>
+                  </span>
+                </a>
+                <CopyButton text={row.copy} label={row.label} />
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </main>
