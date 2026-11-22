@@ -2,6 +2,8 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 const Player = dynamic(
   () => import("@lottiefiles/react-lottie-player").then((mod) => mod.Player),
@@ -109,6 +111,13 @@ const Contact = () => {
             </motion.a>
           ))}
         </div>
+
+        <Link
+          href="/contact"
+          className="inline-flex items-center gap-2 mt-12 rounded-full border border-white/20 bg-white/5 px-6 py-3 font-medium hover:bg-white hover:text-black transition-all duration-300"
+        >
+          View contact card &amp; save to phone <ArrowUpRight className="w-4 h-4" />
+        </Link>
       </div>
     </section>
   );

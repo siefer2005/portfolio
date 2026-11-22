@@ -5,6 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://portfolio-kohl-eight-b3aadnkyao.vercel.app"),
   title: "Animesh Ansh Yadav | Portfolio",
   description: "A creative developer portfolio built with Next.js and Framer Motion, featuring scrollytelling and dynamic UI.",
   keywords: ["Animesh Ansh Yadav", "Portfolio", "Frontend Developer", "Next.js", "React", "Framer Motion", "Web Developer"],
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Animesh Ansh Yadav | Portfolio",
     description: "Creative developer portfolio built with Next.js, featuring scrollytelling.",
-    url: "https://github.com/siefer2005/My-Portfolio",
+    url: "/",
     siteName: "Animesh Ansh Yadav Portfolio",
     locale: "en_US",
     type: "website",
